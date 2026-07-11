@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks - TrackerBit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/" class="logo">
+                <i class="fas fa-chart-line"></i> TrackerBit
+            </a>
+            <div class="nav-links">
+                <a href="/">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <div class="dropdown">
+                    <button class="dropdown-btn">
+                        <i class="fas fa-tasks"></i> Tasks/Summary <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="/tasks" class="active">
+                            <i class="fas fa-list"></i> Tasks
+                        </a>
+                        <a href="/daily-summary">
+                            <i class="fas fa-calendar-day"></i> Summary
+                        </a>
+                    </div>
+                </div>
+                <a href="/profile">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="/logout" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container tasks-page">
+        <div class="task-section">
+            <h2><i class="fas fa-sync-alt"></i> Habits</h2>
+            <div class="task-list">
+                {% for habit in habits %}
+                <div class="task-item habit">
+                    <span class="task-title">{{ habit.title }}</span>
+                    <div class="task-actions">
+                        <button onclick="updateHabit({{ habit.id }}, 'up')" class="btn-icon positive">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button onclick="updateHabit({{ habit.id }}, 'down')" class="btn-icon negative">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="task-section">
+            <h2><i class="fas fa-calendar-day"></i> Dailies</h2>
+            <div class="task-list">
+                {% for daily in dailies %}
+                <div class="task-item daily {% if daily.completed %}completed{% endif %}" data-task-id="{{ daily.id }}">
+                    <span class="task-title">{{ daily.title }}</span>
+                    <button onclick="completeTask({{ daily.id }}, 'daily')" class="btn-icon task-complete-btn">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="task-section">
+            <h2><i class="fas fa-clipboard-list"></i> To-Dos</h2>
+            <div class="task-list">
+                {% for todo in todos %}
+                <div class="task-item todo {% if todo.completed %}completed{% endif %}" data-task-id="{{ todo.id }}">
+                    <span class="task-title">{{ todo.title }}</span>
+                    <button onclick="completeTask({{ todo.id }}, 'todo')" class="btn-icon task-complete-btn">
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="task-section summary-section">
+            <h2><i class="fas fa-chart-bar"></i> Today's Summary</h2>
+            <div class="summary-container">
+                <div class="summary-content">
+                    <div class="summary-category">
+                        <h3>Habits</h3>
+                        <div id="habits-summary" class="summary-list"></div>
+                    </div>
+                    <div class="summary-category">
+                        <h3>Dailies</h3>
+                        <div id="dailies-summary" class="summary-list"></div>
+                    </div>
+                    <div class="summary-category">
+                        <h3>To-Dos</h3>
+                        <div id="todos-summary" class="summary-list"></div>
+                    </div>
+                    <div class="summary-category">
+                        <h3>Statistics</h3>
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <span class="stat-label">Completion Rate</span>
+                                <div class="progress-bar">
+                                    <div id="completionRate" class="progress" style="width: 0%"></div>
+                                </div>
+                                <span id="completionRateText">0%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Experience Gained</span>
+                                <span id="experienceGained">0 XP</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Health Change</span>
+                                <span id="healthChange">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrackerBit - Level Up Your Life</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/" class="logo">
+                <i class="fas fa-chart-line"></i> TrackerBit
+            </a>
+            <div class="nav-links">
+                {% if current_user.is_authenticated %}
+                    <a href="/" class="active">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <div class="dropdown">
+                        <button class="dropdown-btn">
+                            <i class="fas fa-tasks"></i> Tasks/Summary <i class="fas fa-caret-down"></i>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="/tasks">
+                                <i class="fas fa-list"></i> Tasks
+                            </a>
+                            <a href="/daily-summary">
+                                <i class="fas fa-calendar-day"></i> Summary
+                            </a>
+                        </div>
+                    </div>
+                    <a href="/profile">
+                        <i class="fas fa-user"></i> Profile
+                    </a>
+                    <a href="/logout" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                {% else %}
+                    <a href="/login" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="container dashboard">
+        {% if current_user.is_authenticated %}
+            <div class="character-stats">
+                <h2>Level {{ current_user.level }} Adventurer</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <h3>Experience</h3>
+                        <div class="progress-bar">
+                            <div id="experience" class="progress-fill experience" style="width: {{ experience_percentage }}%"></div>
+                        </div>
+                        <small>{{ experience_percentage }}% to next level</small>
+                    </div>
+                    <div class="stat-item">
+                        <h3>Health</h3>
+                        <div class="progress-bar">
+                            <div id="health" class="progress-fill health" style="width: {{ health_percentage }}%"></div>
+                        </div>
+                        <small>{{ health_percentage }}% remaining</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tasks-grid">
+                <!-- Habits Section -->
+                <div class="task-card">
+                    <div class="task-header">
+                        <h3 class="task-title">
+                            <i class="fas fa-sync-alt"></i> Habits
+                        </h3>
+                        <button class="btn btn-primary" onclick="showAddTaskModal('habit')">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <ul class="task-list">
+                        {% for habit in habits %}
+                        <li class="habit-item">
+                            <span>{{ habit.title }}</span>
+                            <div>
+                                <button class="btn btn-secondary habit-btn" data-habit-id="{{ habit.id }}" data-direction="up">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="btn btn-secondary habit-btn" data-habit-id="{{ habit.id }}" data-direction="down">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Dailies Section -->
+                <div class="task-card">
+                    <div class="task-header">
+                        <h3 class="task-title">
+                            <i class="fas fa-calendar-check"></i> Dailies
+                        </h3>
+                        <button class="btn btn-primary" onclick="showAddTaskModal('daily')">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <ul class="task-list">
+                        {% for daily in dailies %}
+                        <li>
+                            <input type="checkbox" class="task-checkbox" 
+                                   data-task-id="{{ daily.id }}" 
+                                   data-task-type="daily"
+                                   {% if daily.completed %}checked{% endif %}>
+                            <span>{{ daily.title }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- To-Dos Section -->
+                <div class="task-card">
+                    <div class="task-header">
+                        <h3 class="task-title">
+                            <i class="fas fa-clipboard-list"></i> To-Dos
+                        </h3>
+                        <button class="btn btn-primary" onclick="showAddTaskModal('todo')">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                    <ul class="task-list">
+                        {% for todo in todos %}
+                        <li>
+                            <input type="checkbox" class="task-checkbox" 
+                                   data-task-id="{{ todo.id }}" 
+                                   data-task-type="todo"
+                                   {% if todo.completed %}checked{% endif %}>
+                            <span>{{ todo.title }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% else %}
+            <div class="welcome-section">
+                <h1>Welcome to TrackerBit</h1>
+                <p>Transform your daily tasks into an epic journey of self-improvement</p>
+                <div class="welcome-buttons">
+                    <a href="/login" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Get Started
+                    </a>
+                    <a href="/register" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </main>
+
+    {% if current_user.is_authenticated %}
+    <!-- Add Task Modal -->
+    <div id="add-task-modal" class="modal">
+        <div class="modal-content">
+            <h2>Add New Task</h2>
+            <form id="new-task-form">
+                <div class="form-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" name="title" required>
+                </div>
+                <input type="hidden" id="task-type" name="type">
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
